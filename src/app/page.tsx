@@ -58,7 +58,7 @@ export default async function Home() {
               href="/quiz" 
               className="bg-white text-emerald-700 border-2 border-emerald-100 px-10 py-4 rounded-full font-bold text-lg hover:bg-emerald-50 transition-all hover:border-emerald-200 text-center"
             >
-              Try AI Skin Quiz
+              know your Skin Type
             </Link>
           </div>
         </div>
