@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       Expert Response:`;
 
     // Using 'gemini-pro' - the most universal model name
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = response.text();
