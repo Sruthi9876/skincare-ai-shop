@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 const CartContext = createContext<any>(null);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState<any[]>([]);
 
   const addToCart = (product: any) => {
     setCart((prev) => [...prev, product]);
