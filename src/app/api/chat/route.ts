@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const productList = products.map((p: any) => `- ${p.name}: $${p.price}`).join('\n');
 
     // This is the most stable model name for v1beta API
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
     const finalPrompt = `
       You are the LuminaSkin consultant. Use this catalog to help the user.
