@@ -5,7 +5,7 @@ import { Order } from '@/models/Order';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, );
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   try {
@@ -14,9 +14,11 @@ export async function POST(req: Request) {
 
     await connectDB();
 
+    // Use the Vercel URL from environment variables, or fallback to your current live link
+    const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://skincare-ai-shop-bec8.vercel.app';
+
     const total = items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
 
-    // FIX: Handle the userId carefully. If no session, use a placeholder or make it optional
     const order = await Order.create({
       userId: (session?.user as any)?.id || "guest_user",
       items: items,
@@ -30,7 +32,10 @@ export async function POST(req: Request) {
       const lineItems = items.map((item: any) => ({
         price_data: {
           currency: 'usd',
-          product_data: { name: item.name, images: item.image ? [item.image] : [] },
+          product_data: { 
+            name: item.name, 
+            images: item.image ? [item.image] : [] 
+          },
           unit_amount: Math.round(item.price * 100),
         },
         quantity: item.quantity,
@@ -40,8 +45,9 @@ export async function POST(req: Request) {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        success_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/success?orderId=${order._id}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/cart`,
+        // FIXED: Now uses the dynamic baseUrl
+        success_url: `${baseUrl}/success?orderId=${order._id}`,
+        cancel_url: `${baseUrl}/cart`,
       });
 
       return NextResponse.json({ url: stripeSession.url });
