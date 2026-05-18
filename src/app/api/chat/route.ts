@@ -29,13 +29,23 @@ export async function POST(req: Request) {
     }
 
     const finalPrompt = `
-      You are the LuminaSkin consultant. Use this catalog:
+      You are the LuminaSkin professional skincare consultant. 
+      
+      OUR CATALOG:
       ${productList}
       
-      User says: ${userMessage}
-      Instructions: Recommend a product from the list. Be very brief.
-    `;
-
+      YOUR GOAL:
+      - Act as a friendly and professional expert.
+      - Answer the user's questions naturally.
+      - ONLY recommend products from the catalog above if they match the user's needs.
+      - If the user talks about something else or asks to stop talking about products, respond politely to their specific message.
+      
+      CONVERSATION HISTORY:
+      ${messages.map((m: any) => `${m.role === 'user' ? 'Customer' : 'Consultant'}: ${m.content}`).join('\n')}
+      
+      Latest message from Customer: ${userMessage}
+      Your Response:`;
+      
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = response.text();
