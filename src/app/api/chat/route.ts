@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { connectDB } from '@/lib/mongodb';
-import { Product } from '@/models/Product';
+import { connectDB } from '../../../lib/mongodb';
+import { Product } from '../../../models/Product';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -13,23 +13,23 @@ export async function POST(req: Request) {
     await connectDB();
     const products = await Product.find({});
     const productList = products.map((p: any) => 
-      `- ${p.name} (${p.category}): Best for ${p.skinType.join(', ')}. Helps with ${p.concerns.join(', ')}. Price: $${p.price}`
+      `- ${p.name}: $${p.price}. Best for ${p.skinType.join(', ')}.`
     ).join('\n');
 
-    // The most basic, compatible prompt possible
+    // Use the EXACT model ID shown in your AI Studio Playground
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
     const finalPrompt = `
-      You are a skincare expert. Use this product list to help the user:
+      You are the LuminaSkin consultant. Use this catalog:
       ${productList}
-
-      Rules: 
-      1. Only recommend from the list. 
-      2. Be short and professional.
       
-      User says: ${userMessage}
-      Expert Response:`;
+      Rules:
+      1. Only recommend products from the list.
+      2. Be concise.
+      
+      User: ${userMessage}
+      Consultant:`;
 
-    // Using 'gemini-pro' - the most universal model name
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = response.text();
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Gemini Error:", error);
     return NextResponse.json({ 
-      message: `AI Error: ${error.message}. If this is a 404, try changing the model name to 'gemini-1.5-flash' in route.ts` 
+      message: `AI Error: ${error.message}` 
     }, { status: 500 });
   }
 }
