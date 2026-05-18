@@ -12,35 +12,20 @@ export async function POST(req: Request) {
 
     await connectDB();
     const products = await Product.find({});
-    const productList = products.map((p: any) => 
-      `- ${p.name}: $${p.price}. Best for ${p.skinType.join(', ')}.`
-    ).join('\n');
+    const productList = products.map((p: any) => `- ${p.name}: $${p.price}`).join('\n');
 
-    // Use the EXACT model ID shown in your AI Studio Playground
-    // Use the model we saw in your Google Dashboard screenshot
+    // WE ARE USING 1.5-FLASH BECAUSE PRO IS 404-ING ON YOUR ACCOUNT
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const finalPrompt = `
-      You are the LuminaSkin consultant. Use this catalog:
-      ${productList}
-      
-      Rules:
-      1. Only recommend products from the list.
-      2. Be concise.
-      
-      User: ${userMessage}
-      Consultant:`;
+    const finalPrompt = `You are a skincare expert. Catalog:\n${productList}\nUser: ${userMessage}`;
 
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
-    const text = response.text();
-
-    return NextResponse.json({ message: text });
+    return NextResponse.json({ message: response.text() });
 
   } catch (error: any) {
-    console.error("Gemini Error:", error);
-    return NextResponse.json({ 
-      message: `AI Error: ${error.message}` 
-    }, { status: 500 });
+    // This will print the error clearly in Vercel logs
+    console.error("LIVE SITE AI ERROR:", error.message);
+    return NextResponse.json({ message: `AI Error: ${error.message}` }, { status: 500 });
   }
 }
