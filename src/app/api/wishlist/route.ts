@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const user = await User.findOne({ email: session.user?.email });
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    // If product is already in wishlist, remove it. Otherwise, add it.
+    //aa If product is already in wishlist, remove it. Otherwise, add it.
     const isWishlisted = user.wishlist.includes(productId);
     
     if (isWishlisted) {
