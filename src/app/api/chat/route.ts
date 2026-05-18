@@ -17,7 +17,8 @@ export async function POST(req: Request) {
     ).join('\n');
 
     // Use the EXACT model ID shown in your AI Studio Playground
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    // Use the model we saw in your Google Dashboard screenshot
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const finalPrompt = `
       You are the LuminaSkin consultant. Use this catalog:
