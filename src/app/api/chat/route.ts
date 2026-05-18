@@ -14,18 +14,33 @@ export async function POST(req: Request) {
     const products = await Product.find({});
     const productList = products.map((p: any) => `- ${p.name}: $${p.price}`).join('\n');
 
-    // WE ARE USING 1.5-FLASH BECAUSE PRO IS 404-ING ON YOUR ACCOUNT
+    // This is the most stable model name for v1beta API
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const finalPrompt = `You are a skincare expert. Catalog:\n${productList}\nUser: ${userMessage}`;
+    const finalPrompt = `
+      You are the LuminaSkin consultant. Use this catalog to help the user.
+      CATALOG:
+      ${productList}
+      
+      USER QUESTION: ${userMessage}
+      
+      RULES:
+      1. Only recommend products from the catalog.
+      2. Be very brief and friendly.
+    `;
 
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
-    return NextResponse.json({ message: response.text() });
+    const text = response.text();
+
+    return NextResponse.json({ message: text });
 
   } catch (error: any) {
-    // This will print the error clearly in Vercel logs
-    console.error("LIVE SITE AI ERROR:", error.message);
-    return NextResponse.json({ message: `AI Error: ${error.message}` }, { status: 500 });
+    console.error("GEMINI_LIVE_ERROR:", error.message);
+    
+    // If it still 404s, this will tell the user exactly which model failed
+    return NextResponse.json({ 
+      message: `AI is currently updating. (Error: ${error.message})` 
+    });
   }
 }
