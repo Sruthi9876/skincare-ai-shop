@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-import { Product } from '@/models/Product'; // Direct import instead of require
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
 
 export async function POST(req: Request) {
   try {
@@ -45,18 +43,18 @@ export async function GET() {
 
     await connectDB();
     const userId = (session.user as any).id;
+    const user = await User.findOne({ _id: userId }).select('wishlist');
     
-    // Find the user and populate the wishlist with actual product details
-    const user = await User.findOne({ _id: userId }).populate('wishlist');
-    
-    if (!user || !user.wishlist) {
-      return NextResponse.json([]); // Return empty array instead of error
-    }
+    if (!user) return NextResponse.json([], { status: 200 });
 
-    return NextResponse.json(user.wishlist);
+    // Populate the product details for each ID in the wishlist
+    const mongoose = require('mongoose');
+    const Product = mongoose.model('Product');
+    const wishlistedProducts = await Product.find({ _id: { $in: user.wishlist } });
+
+    return NextResponse.json(wishlistedProducts);
   } catch (error: any) {
     console.error("Wishlist GET Error:", error);
-    // Return an empty array instead of 500 so the UI doesn't crash
-    return NextResponse.json([], { status: 200 }); 
+    return NextResponse.json([], { status: 200 }); // Return empty array instead of 500 to prevent crash
   }
 }
